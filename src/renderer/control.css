@@ -1,0 +1,54 @@
+/* 录制时悬浮的小控制条。
+   它所在的窗口开了 contentProtection，屏幕录制抓不到它，
+   所以可以放心地摆在屏幕上让你点"结束"。 */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #1f2328;
+  color: #fff;
+  font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+  user-select: none;
+  cursor: default;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  -webkit-app-region: drag;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e0413c;
+  flex: none;
+}
+
+.time {
+  flex: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+
+button {
+  -webkit-app-region: no-drag;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  background: #e0413c;
+  color: #fff;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+button:hover {
+  background: #c9342f;
+}

@@ -1,0 +1,518 @@
+:root {
+  --bg: #f6f7f9;
+  --card: #ffffff;
+  --line: #e3e6ea;
+  --text: #1f2328;
+  --muted: #6b7280;
+  --accent: #2f6fed;
+  --danger: #e0413c;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-size: 13px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #c9ced6;
+  display: inline-block;
+}
+
+.dot.on {
+  background: var(--danger);
+  box-shadow: 0 0 0 3px rgba(224, 65, 60, 0.18);
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.panel {
+  padding: 14px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---------- 画面区：左边调外框，右边看画面 ---------- */
+
+.studio {
+  display: grid;
+  grid-template-columns: 174px 1fr;
+  gap: 14px;
+  background: #26282c;
+  border-radius: 12px;
+  padding: 14px;
+  color: #e8eaed;
+}
+
+.studio-settings h4 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #e8eaed;
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.sw {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* 色板的颜色只能写在样式表里：页面 CSP 会拦掉 HTML 的内联 style，
+   用内联写法的话这些圆点会全部变成灰色。 */
+.sw[data-color="#8b6cf5"] { background: #8b6cf5; }
+.sw[data-color="#000000"] { background: #000000; }
+.sw[data-color="#44484f"] { background: #44484f; }
+.sw[data-color="#e8e04a"] { background: #e8e04a; }
+.sw[data-color="#7ac943"] { background: #7ac943; }
+.sw[data-color="#35c8d8"] { background: #35c8d8; }
+.sw[data-color="#2f6fed"] { background: #2f6fed; }
+.sw[data-color="#7b3fe4"] { background: #7b3fe4; }
+.sw[data-color="#d94f9a"] { background: #d94f9a; }
+.sw[data-color="#e0413c"] { background: #e0413c; }
+.sw[data-color="#ffffff"] { background: #ffffff; }
+.sw[data-color="#ffd600"] { background: #ffd600; }
+.sw[data-color="#111111"] { background: #111111; }
+.sw[data-color="#ff5fa2"] { background: #ff5fa2; }
+
+.sw.active {
+  box-shadow: 0 0 0 2px #26282c, 0 0 0 4px #ffffff;
+}
+
+/* 鼠标颜色用的迷你色板 */
+.sw.sm {
+  width: 15px;
+  height: 15px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.sw.sm.active {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--accent);
+}
+
+.swatches.inline {
+  margin-bottom: 0;
+  flex-wrap: nowrap;
+}
+
+.slider-line {
+  display: grid;
+  grid-template-columns: 46px 1fr 40px;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.slider-line input[type="range"] {
+  width: 100%;
+}
+
+.slider-line output {
+  text-align: right;
+  color: #9aa0a6;
+  font-variant-numeric: tabular-nums;
+}
+
+.studio-meta {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #9aa0a6;
+  font-variant-numeric: tabular-nums;
+}
+
+.studio-note {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #767c84;
+}
+
+.studio-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.frame-shell {
+  width: 100%;
+  box-sizing: border-box;
+  background: #8b6cf5;
+  /* padding 和圆角由 JS 按当前参数换算后写入 */
+  transition: background-color 0.15s ease;
+}
+
+#preview {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+  background: #14171c;
+}
+
+#playback {
+  width: 100%;
+  max-height: 300px;
+  display: none;
+  background: #000;
+  border-radius: 6px;
+}
+
+/* 有回放时，舞台从"实时预览"切成"回放" */
+body.reviewing #preview {
+  display: none;
+}
+
+body.reviewing #playback {
+  display: block;
+}
+
+.timer {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.block {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.block-title {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.4px;
+}
+
+/* ---------- 可视化选择"录哪个界面" ---------- */
+
+.row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.link-btn {
+  border: none;
+  background: none;
+  color: var(--accent);
+  padding: 0;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+.scope-group {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.source-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.src-card {
+  position: relative;
+  padding: 0;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.src-card:hover {
+  border-color: #b9c0ca;
+}
+
+.src-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(47, 111, 237, 0.16);
+}
+
+.src-card.active::after {
+  content: '';
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: inset 0 0 0 3.5px #fff;
+}
+
+.src-card img {
+  width: 100%;
+  height: 70px;
+  object-fit: contain;
+  display: block;
+  background: #e9ecf1;
+}
+
+.src-card .src-name {
+  display: block;
+  padding: 5px 6px 6px;
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+select,
+button,
+input[type="range"] {
+  font-size: 13px;
+}
+
+select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.row select {
+  width: auto;
+  flex: 1;
+}
+
+.slider-row {
+  display: grid;
+  grid-template-columns: 66px 1fr 54px;
+  align-items: center;
+  gap: 8px;
+}
+
+.slider-row output {
+  text-align: right;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.checks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.checks label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  padding: 8px 14px;
+  background: #fff;
+  color: var(--text);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+button:hover {
+  border-color: #c7ccd4;
+}
+
+button.primary {
+  flex: 1;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+button.primary:hover {
+  background: #2560d8;
+}
+
+button.primary.recording {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+button.ghost {
+  background: #fff;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.status {
+  margin: 0;
+  color: var(--muted);
+  min-height: 18px;
+  font-size: 12px;
+}
+
+/* ---------- 小条模式：只留预览和按钮 ---------- */
+
+body.mini .panel {
+  padding: 8px;
+  gap: 8px;
+}
+
+body.mini .block,
+body.mini .status,
+body.mini .hint {
+  display: none;
+}
+
+body.mini .preview-wrap {
+  padding: 4px;
+}
+
+body.mini #preview {
+  height: 46px;
+  width: auto;
+}
+
+body.mini .actions {
+  gap: 6px;
+}
+
+body.mini button {
+  padding: 5px 10px;
+}
+
+/* ---------- 区域框选窗口 ---------- */
+
+body.picking {
+  background: rgba(10, 12, 16, 0.35);
+  cursor: crosshair;
+  overflow: hidden;
+}
+
+#mask {
+  position: fixed;
+  inset: 0;
+}
+
+#sel {
+  position: fixed;
+  border: 2px dashed #ffd600;
+  background: rgba(255, 214, 0, 0.12);
+  display: none;
+  pointer-events: none;
+}
+
+#tip {
+  position: fixed;
+  left: 50%;
+  top: 24px;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+#size {
+  position: fixed;
+  color: #ffd600;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: none;
+  pointer-events: none;
+}

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- media-src 必须放开 blob:，否则录完的回放加载不出来（会是个黑框） -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; media-src 'self' blob:;"
+    />
+    <title>ClickZoom 录屏</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot" id="statusDot"></span>
+        <span class="title">ClickZoom 录屏</span>
+      </div>
+      <span class="hint">Ctrl+Alt+R 开始 / 停止</span>
+    </header>
+
+    <main class="panel">
+      <!-- 画面区：左边调外框，右边看画面。
+           录制时右边是实时预览，录完就变成回放。 -->
+      <section class="studio">
+        <aside class="studio-settings">
+          <h4>背景颜色</h4>
+          <!-- 颜色写在 CSS 里（内联 style 会被页面的安全策略拦掉） -->
+          <div class="swatches" id="bgSwatches">
+            <button class="sw" data-color="#8b6cf5" title="紫"></button>
+            <button class="sw" data-color="#000000" title="黑"></button>
+            <button class="sw" data-color="#44484f" title="深灰"></button>
+            <button class="sw" data-color="#e8e04a" title="黄"></button>
+            <button class="sw" data-color="#7ac943" title="绿"></button>
+            <button class="sw" data-color="#35c8d8" title="青"></button>
+            <button class="sw" data-color="#2f6fed" title="蓝"></button>
+            <button class="sw" data-color="#7b3fe4" title="紫罗兰"></button>
+            <button class="sw" data-color="#d94f9a" title="粉"></button>
+            <button class="sw" data-color="#e0413c" title="红"></button>
+            <button class="sw" data-color="#ffffff" title="白"></button>
+          </div>
+
+          <h4>背景尺寸</h4>
+          <div class="slider-line">
+            <span>内边距</span>
+            <input type="range" id="padRange" min="0" max="140" step="2" value="50" />
+            <output id="padOut">50px</output>
+          </div>
+          <div class="slider-line">
+            <span>圆角</span>
+            <input type="range" id="radRange" min="0" max="60" step="2" value="10" />
+            <output id="radOut">10px</output>
+          </div>
+
+          <p class="studio-meta" id="reviewInfo">—</p>
+          <p class="studio-note">录完也能随时调，保存时才写进视频</p>
+        </aside>
+
+        <div class="studio-stage">
+          <!-- 这层壳就是背景色 + 内边距 + 圆角，录完也能随时调 -->
+          <div class="frame-shell" id="frameShell">
+            <canvas id="preview" width="640" height="360"></canvas>
+            <video id="playback" controls playsinline></video>
+          </div>
+          <div class="timer" id="timer">00:00</div>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="row-between">
+          <label class="block-title">录哪里</label>
+          <button id="btnRefreshSources" class="link-btn">刷新列表</button>
+        </div>
+
+        <p class="scope-group">屏幕</p>
+        <div class="source-grid" id="screenGrid"></div>
+
+        <p class="scope-group">应用窗口（只录这一个界面，其他不会进画面）</p>
+        <div class="source-grid" id="windowGrid"></div>
+        <p class="status" id="emptyHint" hidden>当前没有可录的窗口 —— 先把想录的那个界面打开</p>
+      </section>
+
+      <section class="block">
+        <label class="block-title">鼠标指针</label>
+        <div class="checks">
+          <label><input type="checkbox" id="chkClickRing" checked /> 点击时溅一圈涟漪</label>
+        </div>
+        <div class="row">
+          <span class="muted">指针</span>
+          <select id="cursorStyle">
+            <option value="arrow" selected>放大箭头（白底黑边）</option>
+            <option value="hand">手指（点按）</option>
+            <option value="crosshair">十字准星</option>
+            <option value="ibeam">文本 I 型</option>
+            <option value="dot">圆点</option>
+            <option value="system">系统鼠标（原样）</option>
+            <option value="none">不画鼠标</option>
+          </select>
+        </div>
+        <div class="row">
+          <span class="muted">颜色</span>
+          <div class="swatches inline" id="cursorColors">
+            <button type="button" class="sw sm" data-color="#ffffff" title="白（经典）"></button>
+            <button type="button" class="sw sm" data-color="#111111" title="黑"></button>
+            <button type="button" class="sw sm" data-color="#ffd600" title="黄"></button>
+            <button type="button" class="sw sm" data-color="#e0413c" title="红"></button>
+            <button type="button" class="sw sm" data-color="#35c8d8" title="青"></button>
+            <button type="button" class="sw sm" data-color="#2f6fed" title="蓝"></button>
+          </div>
+        </div>
+        <div class="slider-line">
+          <span>大小</span>
+          <input type="range" id="cursorSize" min="20" max="96" step="2" value="40" />
+          <output id="cursorSizeOut">40px</output>
+        </div>
+      </section>
+
+      <section class="block">
+        <label class="block-title">镜头</label>
+        <div class="slider-row">
+          <span>放大倍数</span>
+          <input type="range" id="zoomScale" min="1.2" max="3" step="0.1" value="2" />
+          <output id="zoomScaleOut">2.0x</output>
+        </div>
+        <div class="slider-row">
+          <span>推近用时</span>
+          <input type="range" id="inMs" min="80" max="600" step="10" value="260" />
+          <output id="inMsOut">260ms</output>
+        </div>
+        <div class="slider-row">
+          <span>停留时长</span>
+          <input type="range" id="holdMs" min="200" max="2000" step="50" value="700" />
+          <output id="holdMsOut">700ms</output>
+        </div>
+        <div class="slider-row">
+          <span>拉回用时</span>
+          <input type="range" id="outMs" min="80" max="800" step="10" value="320" />
+          <output id="outMsOut">320ms</output>
+        </div>
+      </section>
+
+      <section class="block">
+        <label class="block-title">声音与画质</label>
+        <div class="checks">
+          <label><input type="checkbox" id="chkMic" /> 麦克风</label>
+          <label><input type="checkbox" id="chkSys" /> 系统声音</label>
+          <label><input type="checkbox" id="chkHidePanel" checked /> 录制时自动隐藏面板</label>
+        </div>
+        <div class="row">
+          <span class="muted">帧率</span>
+          <select id="fpsSelect">
+            <option value="24">24 fps</option>
+            <option value="30" selected>30 fps</option>
+            <option value="60">60 fps</option>
+          </select>
+          <span class="muted">清晰度</span>
+          <select id="qualitySelect">
+            <option value="4000000">标准</option>
+            <option value="8000000" selected>高</option>
+            <option value="16000000">极高</option>
+          </select>
+        </div>
+      </section>
+
+      <div class="actions">
+        <button id="btnRecord" class="primary">开始录制</button>
+        <button id="btnSave" class="primary" hidden>保存…</button>
+        <button id="btnDiscard" class="ghost" hidden>丢掉</button>
+        <button id="btnHide" class="ghost">隐藏面板</button>
+      </div>
+
+      <p class="status" id="status">就绪</p>
+    </main>
+
+    <script src="zoom.js"></script>
+    <script src="recorder.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+# 依赖（要自己 npm install）
+node_modules/
+
+# 构建产物
+dist/
+build/
+out/
+
+# 自测生成的截图/录像（跑 npm run selftest 会重新生成）
+selftest-*.webm
+selftest-*.jpg
+selftest-*.png
+
+# 系统杂项
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*

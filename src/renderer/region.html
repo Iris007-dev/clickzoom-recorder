@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self';" />
+    <title>框选录制区域</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="picking">
+    <div id="mask"></div>
+    <div id="sel"></div>
+    <div id="size"></div>
+    <div id="tip">按住左键拖出要录的区域 · 回车确认 · Esc 取消</div>
+
+    <script>
+      (function () {
+        var mask = document.getElementById('mask');
+        var sel = document.getElementById('sel');
+        var size = document.getElementById('size');
+        var start = null;
+        var rect = null;
+
+        mask.addEventListener('mousedown', function (e) {
+          start = { x: e.clientX, y: e.clientY };
+          sel.style.display = 'block';
+          update(e);
+        });
+
+        window.addEventListener('mousemove', function (e) {
+          if (!start) return;
+          update(e);
+        });
+
+        window.addEventListener('mouseup', function (e) {
+          if (!start) return;
+          update(e);
+          start = null;
+        });
+
+        function update(e) {
+          var x = Math.min(start.x, e.clientX);
+          var y = Math.min(start.y, e.clientY);
+          var w = Math.abs(e.clientX - start.x);
+          var h = Math.abs(e.clientY - start.y);
+          rect = { x: x, y: y, w: w, h: h };
+          sel.style.left = x + 'px';
+          sel.style.top = y + 'px';
+          sel.style.width = w + 'px';
+          sel.style.height = h + 'px';
+          size.style.display = 'block';
+          size.style.left = e.clientX + 12 + 'px';
+          size.style.top = e.clientY + 12 + 'px';
+          size.textContent = w + ' × ' + h;
+        }
+
+        window.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            if (rect && rect.w > 20 && rect.h > 20) {
+              window.api.regionConfirm(rect);
+            }
+          } else if (e.key === 'Escape') {
+            window.api.regionCancel();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

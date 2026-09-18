@@ -1,0 +1,16 @@
+{
+  "name": "clickzoom-recorder",
+  "version": "1.0.0",
+  "description": "点击自动放大的录屏软件 (ClickZoom Recorder)",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "node scripts/start.js",
+    "dev": "node scripts/start.js --dev",
+    "selftest": "node scripts/start.js --selftest"
+  },
+  "author": "小圆",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "42.11.4"
+  }
+}
