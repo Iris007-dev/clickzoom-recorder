@@ -1,42 +1,69 @@
 # ClickZoom 录屏
 
-点一下鼠标，镜头自动推近再拉回 —— 类似 DemoGet / Screen Studio 那种效果。
-和它们不同的是：本软件的放大是**录制时实时算出来的**，录完直接是成品，不用后期。
+**点一下鼠标，镜头自动推近。免费、开源、无水印。**
 
-## 安装位置
+做教程视频最烦的是什么？观众看不清你点了哪里。
 
-正式装在 **`D:\ClickZoom`**，桌面快捷方式 **ClickZoom Recorder**，双击就能开。
+这个工具就解决这一件事：**你点到哪，镜头就自动推到哪** —— 停留一下，再拉回来。
+不用手动打关键帧，也不用后期剪辑。
 
-工作区这份是源码，改完要同步过去才生效：
+> Screen Studio 那种"点击自动放大"的效果，Mac 上得花钱买，Windows 上一直没趁手的。
+> 现在有了，而且免费。
 
-```bash
-cp -r src scripts README.md /d/ClickZoom/
-```
-
-`node_modules` 两边一样，不用动。
+![界面](docs/screenshot-ui.png)
 
 ---
 
-## 一、跑起来
+## 为什么值得用
+
+### 💰 免费
+
+- **完全免费、开源**（MIT 协议）—— **没有时长限制、没有水印、不限制导出次数**
+- **不用注册、不用登录**，装完直接用
+- **不联网**：录好的视频只存在你自己电脑上，不经过任何服务器
+- 同类工具基本都要订阅，而且 Screen Studio 只有 Mac 版
+
+### 👍 好用
+
+| 功能 | 说明 |
+| --- | --- |
+| 🖱️ **点哪放大哪** | 不用手动打关键帧。你点鼠标，它自动推近 → 停留 → 拉回，快慢自己调 |
+| 🪟 **只录想要的界面** | 带缩略图的可视化列表，选哪个就只录哪个，其他窗口不会入镜 |
+| 🎨 **录完还能调外框** | 背景色、留白、圆角随便拖，右边画面立刻跟着变，满意了再保存 |
+| ✨ **鼠标指针能换** | 六种样式：放大的白箭头、手型、十字、I 型、圆点；颜色、大小都能调 |
+| 👻 **录制时界面自动隐身** | 主窗口让开，只在右下角留个小条给你点"结束" —— 而且**它录不进画面** |
+| ⌨️ **键盘也能控制** | `Ctrl + Alt + R` 开始 / 停止，窗口没焦点照样管用 |
+| 🔍 **自带体检** | `npm run selftest` 一键自检，有问题直接告诉你哪儿不对劲 |
+
+---
+
+## 装一下
 
 ```bash
+git clone git@github.com:Iris007-dev/clickzoom-recorder.git
 cd clickzoom-recorder
+npm install
 npm start
 ```
 
-`npm start` 实际执行 `scripts/start.js`。之所以不直接写 `electron .`：某些宿主环境
-（IDE 内置终端）会注入 `ELECTRON_RUN_AS_NODE=1`，这会让 electron.exe 退化成普通 Node，
-`require('electron')` 返回 exe 路径字符串而不是模块，`app.whenReady()` 当场崩。
-引导脚本会先把这个变量删掉再拉起 Electron。
+- 需要 **Node 18+**
+- **Windows 10 2004 以上**（那个"录不进画面"的悬浮控制条依赖系统支持）
 
-如果报找不到 electron 二进制，用国内镜像补装：
+`npm install` 卡在下载 Electron 的话，用国内镜像补一下：
 
 ```bash
 cd node_modules/electron
 ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ node install.js
 ```
 
-## 二、怎么用
+> **为什么用 `npm start` 而不是 `electron .`？**
+> 某些环境（比如 IDE 内置终端）会注入 `ELECTRON_RUN_AS_NODE=1`，
+> 让 electron.exe 退化成普通 Node，一启动就崩。
+> `scripts/start.js` 会先把这个变量删掉再拉起 Electron。
+
+---
+
+## 怎么用
 
 **第零步：调画面外框**（界面左上那块深色区域）
 
@@ -112,7 +139,7 @@ ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ node install.js
 - `Ctrl + Alt + R` 开始 / 停止录制
 - `Ctrl + Alt + Z` 以当前光标位置为中心推近（鼠标监视器万一罢工时用它）
 
-## 二·五、怀疑有问题时，先跑自检
+## 出问题？先跑自检
 
 ```bash
 npm run selftest
@@ -142,7 +169,7 @@ CZR-SELFTEST {"ok":true,"videoW":2880,"videoH":1800,"canvasW":1920,"canvasH":120
 `ok:true` 就说明整条链路（抓屏 → 缩放 → 编码 → 落盘）是通的。
 自测产物会存到系统临时目录，同时抓一张放大瞬间的快照方便肉眼看。
 
-## 三、四个镜头参数怎么调
+## 镜头参数怎么调
 
 | 参数 | 作用 | 手感建议 |
 | --- | --- | --- |
@@ -153,7 +180,7 @@ CZR-SELFTEST {"ok":true,"videoW":2880,"videoH":1800,"canvasW":1920,"canvasH":120
 
 核心在 `src/renderer/zoom.js`，用的 `easeInOutCubic` 缓动 —— 两头慢中间快，这是"电影感"的来源。改成线性插值会立刻变得很廉价，你可以试试。
 
-## 三·五、鼠标指针
+## 鼠标指针
 
 默认用的是**软件自己画的放大箭头**：白色填充 + 黑色细边 + 一层很轻的投影 ——
 就是你熟悉的那个光标形状，只是更大更清楚，录出来观众一眼就能找到你的鼠标。
@@ -200,7 +227,7 @@ CZR-SELFTEST {"ok":true,"videoW":2880,"videoH":1800,"canvasW":1920,"canvasH":120
 > 想彻底省心，用 **「窗口」模式**：窗口捕获天然不含鼠标光标，
 > 从源头上就不存在这个问题，效果也最干净。
 
-## 四、原理（数据流）
+## 原理：数据是怎么流的
 
 ```
 屏幕流 (desktopCapturer)
@@ -239,7 +266,7 @@ CZR-SELFTEST {"ok":true,"videoW":2880,"videoH":1800,"canvasW":1920,"canvasH":120
 拿这个 hwnd 去问系统要窗口矩形（见 `src/main/window-rect.ps1`），
 再把鼠标的屏幕坐标减掉窗口左上角，换算成窗口画面里的坐标。
 
-## 五、已知限制 & 排错
+## 已知限制 & 排错
 
 - **整屏模式下指针位置不对**：依赖 PowerShell 监视器。它输出的是**物理像素**坐标，和 desktopCapturer
   的画面像素一一对应；高 DPI 屏如果位置偏了，调 `recorder.js` 里的 `ratioX / ratioY`。
@@ -260,21 +287,26 @@ CZR-SELFTEST {"ok":true,"videoW":2880,"videoH":1800,"canvasW":1920,"canvasH":120
   PATH 被塞得极长）会超限。scripts 里已经做了两道防护：Node 侧只传必要变量，
   ps1 里再把超长变量清掉。启动时看到 `TRIMMED x PATH,...` 就说明防护生效了，属正常。
 
-## 六、文件地图
+## 文件地图
 
 ```
-src/
-  main/
-    main.js            主进程：窗口、IPC、热键、保存文件
-    mouse-monitor.js   PowerShell 监视器的 Node 封装
-    mouse-monitor.ps1  轮询系统 API，输出点击/移动（此文件请保持纯 ASCII）
-    czr-native.dll     预编译的 Win32 助手程序集，别删
-  preload/preload.js   安全桥梁，把主进程能力挂到 window.api
-  renderer/
-    index.html         控制面板
-    app.js             界面逻辑
-    zoom.js            缩放状态机 ★效果核心
-    recorder.js        渲染循环与录制 ★效果核心
-    control.html       录制时右下角的悬浮小条
-    region.html        区域框选窗口（界面上的入口已移除，代码留着备用）
+clickzoom-recorder/
+├── src/
+│   ├── main/                  主进程
+│   │   ├── main.js                窗口、IPC、托盘、热键、保存文件
+│   │   ├── mouse-monitor.js       PowerShell 鼠标监视器的 Node 封装
+│   │   ├── mouse-monitor.ps1      轮询系统 API，输出点击/移动（保持纯 ASCII）
+│   │   ├── window-rect.ps1        查窗口在屏幕上的位置（窗口录制要用）
+│   │   └── czr-native.dll         预编译的 Win32 助手，别删
+│   ├── preload/preload.js     安全桥梁，把主进程能力挂到 window.api
+│   └── renderer/              界面
+│       ├── index.html             控制面板
+│       ├── app.js                 界面逻辑
+│       ├── zoom.js                缩放状态机 ★效果核心
+│       ├── recorder.js            渲染循环与录制 ★效果核心
+│       ├── control.html           录制时右下角的悬浮小条
+│       └── region.html            区域框选窗口（入口已移除，留着备用）
+├── scripts/start.js           启动引导（清掉 ELECTRON_RUN_AS_NODE 再拉起 Electron）
+├── docs/                      README 用的截图
+└── LICENSE                    MIT
 ```
